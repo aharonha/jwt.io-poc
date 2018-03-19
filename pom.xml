@@ -7,10 +7,13 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>jwt.client</module>
+		<module>com.auth0</module>
+		<module>org.bitbucket.b_c</module>
+		<module>io.jsonwebtoken</module>
+		<module>io.vertx</module>
 	</modules>
 	<prerequisites>
 		<maven>3.5.0</maven>
-
 	</prerequisites>
 	<build>
 		<plugins>
@@ -19,7 +22,7 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.7.0</version>
 				<configuration>
-					<release>1.8</release>
+					<release>9</release>
 				</configuration>
 			</plugin>
 		</plugins>
