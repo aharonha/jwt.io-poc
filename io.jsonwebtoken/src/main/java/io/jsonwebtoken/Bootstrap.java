@@ -1,5 +1,7 @@
 package io.jsonwebtoken;
 
+import java.io.File;
+import java.io.FileReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -13,6 +15,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.BiFunction;
 
 public class Bootstrap {
@@ -21,29 +24,37 @@ public class Bootstrap {
 
   public static void main(String[] args) throws Exception {
 
-    String token = args[0];
-    System.out.println(token);
-//    String key = args[1];
-//    System.out.println(key);
 
-    Map<String,byte[] > keyStore = new HashMap<>();
-    keyStore.put("abcd",  Base64.getDecoder().decode("BBBB"));
-    keyStore.put("efgh",  Base64.getDecoder().decode("CCCC"));
-
+    Map<String, byte[]> keyStore = new HashMap<>();
+    Properties properties = System.getProperties();
+    String keystorePath = properties.getProperty("keystore.path");
+    Properties keyFile = new Properties();
+    try {
+      keyFile.load(new FileReader(new File(keystorePath)));
+      keyFile
+          .forEach((Object key, Object value) -> keyStore.put(String.valueOf(key), String.valueOf(value).getBytes()));
+    } catch (Exception ignoredException) {
+      throw ignoredException;
+    }
 
     JwtParser parser = Jwts.parser();
-
 
     SigningKeyResolver signingKeyResolver = new SigningKeyResolverAdapter() {
       @Override
       public byte[] resolveSigningKeyBytes(JwsHeader header, Claims claims) {
-        return keyStore.get(claims.get(TENENT_ID));
+        return keyStore.get(header.getKeyId());
+      }
+
+      @Override
+      public byte[] resolveSigningKeyBytes(JwsHeader header, String payload) {
+        return this.resolveSigningKeyBytes(header, (Claims) null);
       }
     };
-    
-    
-    
-    Jws<Claims> jwt = parser.setSigningKeyResolver(signingKeyResolver).parseClaimsJws(token);
-    System.out.println(jwt);
+
+
+    for (String token : args) {
+      Jws<Claims> jwt = parser.setSigningKeyResolver(signingKeyResolver).parseClaimsJws(token);
+      System.out.println(jwt);
+    }
   }
 }
